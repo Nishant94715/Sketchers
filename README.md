@@ -108,12 +108,12 @@ database for CoSketch having below 3 documents and its respective structure ment
 	"_id": {
 		"$oid": "661be3fab29b01e73b199d14"
 	},
-	"email": "veet2@gmail.com",
-	"username": "veet2124",
+	"email": "nishantkohli000@gmail.com",
+	"username": "Nishant94175",
 	"password": "$2b$12$lNXnUpFuIyR42ZyxlQj9NOHqAGVMjlAE3gNjcqTQGwGLEdZYTVUk.",
-	"firstName": "Veet",
+	"firstName": "Nishant",
 	"role": "ADMIN",
-	"lastName": "Moradiya",
+	"lastName": "Singh",
 	"createdAt": {
 		"$date": {
 			"$numberLong": "1713103843726"
