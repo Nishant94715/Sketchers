@@ -21,8 +21,10 @@ const swaggerSpec = require("./swagger");
 
 const server = http.createServer(app);
 
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:3000";
+
 app.use(cors({
-  origin: ["http://localhost:3000"],
+  origin: [FRONTEND_URL, "http://localhost:3000"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));

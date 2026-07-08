@@ -8,7 +8,8 @@ let socket;
 export const connectWithSocketServer = (boardId) => {
     const userId = localStorage.getItem('userId')
     
-    socket = io('http://localhost:5002', {
+    const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5002';
+    socket = io(API_URL, {
         query: {
             userId,
             boardId
