@@ -1,25 +1,24 @@
 import * as React from 'react';
-import AppBar from '@mui/material/AppBar';
-import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 
 export const Navbar = () => {
-    return (
-        <Box sx={{ flexGrow: 1 }}>
-            <AppBar position="static">
-                <Toolbar>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-                    CoSketch
-                </Typography>
-                <Button color="inherit" component={Link} to="/" style={{ textDecoration: 'none', color: 'inherit' }}>Home</Button>
-                <Button color="inherit" component={Link} to="/login" style={{ textDecoration: 'none', color: 'inherit' }}>Login</Button>
-                <Button color="inherit" component={Link} to="/registration" style={{ textDecoration: 'none', color: 'inherit' }}>Registration</Button>
-                </Toolbar>
-            </AppBar>
-        </Box>
-    )
-}
+  return (
+    <motion.nav
+      className="navbar"
+      initial={{ opacity: 0, y: -16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      style={{ position: 'sticky', top: 0, zIndex: 100 }}
+    >
+      <Link to="/" className="navbar-brand">
+        ✦ CoSketch
+      </Link>
+      <div className="navbar-links">
+        <Link to="/" className="nav-link">Home</Link>
+        <Link to="/login" className="nav-link">Sign In</Link>
+        <Link to="/registration" className="nav-link-primary">Get Started</Link>
+      </div>
+    </motion.nav>
+  );
+};

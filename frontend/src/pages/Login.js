@@ -1,80 +1,163 @@
 import { useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import Avatar from '@mui/material/Avatar';
-import Button from '@mui/material/Button';
-import TextField from '@mui/material/TextField';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import Snackbar from '@mui/material/Snackbar';
 import { loginUser } from '../services/apiService';
 
 export const Login = () => {
   const formRef = useRef(null);
   const [openSnackbar, setOpenSnackbar] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [snackbarType, setSnackbarType] = useState('success');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSnackbarClose = () => setOpenSnackbar(false);
+  const showNotification = (message, type = 'success') => {
+    setSnackbarMessage(message);
+    setSnackbarType(type);
+    setOpenSnackbar(true);
+    setTimeout(() => setOpenSnackbar(false), 4000);
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
-
-    const reqData = {
-      email: data.get('email'),
-      password: data.get('password')
-    };
-
+    const reqData = { email: data.get('email'), password: data.get('password') };
+    setLoading(true);
     try {
       const responseData = await loginUser(reqData);
-      setSnackbarMessage('User logged in successfully!');
-      setOpenSnackbar(true);
+      showNotification('Welcome back! Redirecting…', 'success');
       formRef.current.reset();
       localStorage.setItem('token', responseData.token);
       localStorage.setItem('userId', responseData.userId);
       localStorage.setItem('username', responseData.username);
       localStorage.setItem('fullname', responseData.fullname);
-      navigate('/whiteboards');
-    } catch (error) {
-      setSnackbarMessage('Incorrect username or password!');
-      setOpenSnackbar(true);
+      setTimeout(() => navigate('/whiteboards'), 900);
+    } catch {
+      showNotification('Incorrect email or password.', 'error');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <main className="grid min-h-[calc(100vh-68px)] place-items-center px-4 py-10">
+    <div className="page-bg" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: '40px 16px' }}>
+      <div className="orb orb-1" />
+      <div className="orb orb-2" />
+
+      {/* Toast */}
+      {openSnackbar && (
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 40 }}
+          style={{
+            position: 'fixed',
+            bottom: 28,
+            right: 28,
+            zIndex: 9999,
+            background: snackbarType === 'success'
+              ? 'linear-gradient(135deg,#10b981,#059669)'
+              : 'linear-gradient(135deg,#ef4444,#dc2626)',
+            color: 'white',
+            padding: '14px 22px',
+            borderRadius: 16,
+            fontWeight: 700,
+            fontSize: '.9rem',
+            boxShadow: '0 8px 32px rgba(0,0,0,.18)',
+          }}
+        >
+          {snackbarType === 'success' ? '✓' : '✕'} {snackbarMessage}
+        </motion.div>
+      )}
+
       <motion.section
-        initial={{ opacity: 0, y: 24 }}
+        initial={{ opacity: 0, y: 28 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.45 }}
-        className="glass-panel w-full max-w-md rounded-[2rem] p-6 sm:p-8"
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="card-elevated"
+        style={{ width: '100%', maxWidth: 440, position: 'relative', zIndex: 1 }}
       >
-        <div className="mb-7 text-center">
-          <Avatar sx={{ width: 54, height: 54, margin: '0 auto 14px', bgcolor: '#aecbeb', color: '#17324d' }}>
-            <LockOutlinedIcon />
-          </Avatar>
-          <h1 className="m-0 text-3xl font-black text-sketch-ink">Welcome back</h1>
-          <p className="m-0 mt-2 text-sm font-medium text-sketch-slate">Open your boards and keep the collaboration moving.</p>
+        {/* Header */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div
+            style={{
+              width: 64,
+              height: 64,
+              background: 'linear-gradient(135deg, var(--accent), var(--accent2))',
+              borderRadius: 18,
+              display: 'grid',
+              placeItems: 'center',
+              margin: '0 auto 20px',
+              fontSize: '1.8rem',
+              boxShadow: '0 4px 20px rgba(99,102,241,.40)',
+            }}
+          >
+            ✦
+          </div>
+          <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: 900, color: 'var(--ink)', letterSpacing: '-0.025em' }}>
+            Welcome back
+          </h1>
+          <p style={{ margin: '10px 0 0', color: 'var(--slate)', fontSize: '.9rem' }}>
+            Sign in to your boards and keep the collaboration moving.
+          </p>
         </div>
 
-        <form ref={formRef} onSubmit={handleSubmit} noValidate className="space-y-4">
-          <TextField required fullWidth id="email" label="Email Address" name="email" autoComplete="email" autoFocus />
-          <TextField required fullWidth name="password" label="Password" type="password" id="password" autoComplete="current-password" />
-          <FormControlLabel control={<Checkbox value="remember" color="primary" />} label="Remember me" />
-          <Button type="submit" fullWidth variant="contained" className="primary-btn" sx={{ py: 1.35 }}>
-            Sign In
-          </Button>
+        <form ref={formRef} onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div>
+            <label style={{ display: 'block', fontWeight: 700, fontSize: '.8rem', color: 'var(--slate)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+              Email
+            </label>
+            <input
+              type="email"
+              name="email"
+              id="email"
+              placeholder="you@example.com"
+              required
+              autoFocus
+              className="input"
+            />
+          </div>
+
+          <div>
+            <label style={{ display: 'block', fontWeight: 700, fontSize: '.8rem', color: 'var(--slate)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '.08em' }}>
+              Password
+            </label>
+            <input
+              type="password"
+              name="password"
+              id="password"
+              placeholder="••••••••"
+              required
+              autoComplete="current-password"
+              className="input"
+            />
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '.875rem', fontWeight: 600, color: 'var(--slate)', cursor: 'pointer' }}>
+              <input type="checkbox" style={{ accentColor: 'var(--accent)', width: 15, height: 15 }} />
+              Remember me
+            </label>
+            <span style={{ fontSize: '.875rem', color: 'var(--muted)', fontWeight: 600 }}>Forgot password?</span>
+          </div>
+
+          <button
+            type="submit"
+            className="btn btn-primary"
+            disabled={loading}
+            style={{ width: '100%', justifyContent: 'center', marginTop: 4, padding: '13px 24px', fontSize: '1rem' }}
+          >
+            {loading ? 'Signing in…' : 'Sign In →'}
+          </button>
         </form>
 
-        <div className="mt-5 flex flex-wrap items-center justify-between gap-3 text-sm font-bold">
-          <span className="text-sketch-slate">Forgot password?</span>
-          <Link to="/registration" className="text-sketch-ink no-underline hover:underline">Create an account</Link>
+        <div style={{ marginTop: 24, textAlign: 'center', fontSize: '.875rem', color: 'var(--slate)' }}>
+          Don't have an account?{' '}
+          <Link to="/registration" style={{ color: 'var(--accent)', fontWeight: 700, textDecoration: 'none' }}>
+            Create one free
+          </Link>
         </div>
       </motion.section>
-
-      <Snackbar open={openSnackbar} autoHideDuration={5000} onClose={handleSnackbarClose} message={snackbarMessage} anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }} />
-    </main>
+    </div>
   );
 };

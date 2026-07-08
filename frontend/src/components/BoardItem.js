@@ -1,20 +1,22 @@
 import React, { useState } from 'react';
-import { Button } from '@mui/material';
+import { motion } from 'framer-motion';
 import DeleteIcon from '@mui/icons-material/Delete';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import EditIcon from '@mui/icons-material/Edit';
 import GroupIcon from '@mui/icons-material/Group';
-import { motion } from 'framer-motion';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import EditBoardDialog from './EditBoardDialog';
 import ConfirmModal from './ConfirmModal';
 import { useNavigate } from 'react-router-dom';
 import { deleteBoardById } from '../services/apiService';
 
-const roleStyles = {
-  OWNER: 'bg-sketch-ink text-white',
-  EDITOR: 'bg-sketch-cream text-sketch-ink',
-  VIEWER: 'bg-sketch-mist text-sketch-ink'
+const roleBadgeClass = {
+  OWNER: 'badge badge-owner',
+  EDITOR: 'badge badge-editor',
+  VIEWER: 'badge badge-viewer',
 };
+
+const roleIcon = { OWNER: '👑', EDITOR: '✏️', VIEWER: '👁️' };
 
 const BoardItem = ({ boardId, name, description, role, memberCnt, lastAccessedAt }) => {
   const navigate = useNavigate();
@@ -40,56 +42,174 @@ const BoardItem = ({ boardId, name, description, role, memberCnt, lastAccessedAt
     }
   };
 
+  const lastAccess = lastAccessedAt
+    ? new Date(lastAccessedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'Never';
+
   return (
     <motion.article
       layout
-      initial={{ opacity: 0, y: 18 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       whileHover={{ y: -6 }}
-      transition={{ duration: 0.28 }}
-      className="glass-panel flex min-h-64 flex-col rounded-3xl p-5"
+      transition={{ duration: 0.3 }}
+      style={{
+        background: 'rgba(255,255,255,0.82)',
+        backdropFilter: 'blur(20px)',
+        border: '1px solid rgba(255,255,255,0.88)',
+        borderRadius: 24,
+        padding: 24,
+        display: 'flex',
+        flexDirection: 'column',
+        minHeight: 260,
+        boxShadow: '0 4px 16px rgba(0,0,0,.08)',
+        transition: 'box-shadow .3s ease',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.boxShadow = '0 12px 40px rgba(99,102,241,.16)'; e.currentTarget.style.borderColor = 'rgba(99,102,241,.25)'; }}
+      onMouseLeave={e => { e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.88)'; }}
     >
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <span className={`inline-flex rounded-full px-3 py-1 text-xs font-black ${roleStyles[role] || roleStyles.VIEWER}`}>{role}</span>
-          <h2 className="m-0 mt-4 truncate text-2xl font-black text-sketch-ink">{name}</h2>
-          <p className="m-0 mt-2 line-clamp-3 text-sm leading-6 text-sketch-slate">{description}</p>
+      {/* Subtle gradient accent top */}
+      <div
+        style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, height: 3,
+          background: role === 'OWNER'
+            ? 'linear-gradient(90deg, #6366f1, #8b5cf6)'
+            : role === 'EDITOR'
+            ? 'linear-gradient(90deg, #f59e0b, #fbbf24)'
+            : 'linear-gradient(90deg, #94a3b8, #cbd5e1)',
+          borderRadius: '24px 24px 0 0',
+        }}
+      />
+
+      {/* Top row */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+        <div style={{ minWidth: 0, flex: 1 }}>
+          <span className={roleBadgeClass[role] || 'badge badge-viewer'}>
+            {roleIcon[role]} {role}
+          </span>
+          <h2
+            style={{
+              margin: '12px 0 0',
+              fontSize: '1.2rem',
+              fontWeight: 900,
+              color: 'var(--ink)',
+              letterSpacing: '-0.02em',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            {name}
+          </h2>
+          <p
+            style={{
+              margin: '8px 0 0',
+              fontSize: '.875rem',
+              lineHeight: 1.65,
+              color: 'var(--slate)',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}
+          >
+            {description || 'No description provided.'}
+          </p>
         </div>
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sketch-mist text-sketch-ink shadow-sm">
-          <GroupIcon />
+
+        <div
+          style={{
+            width: 44, height: 44, flexShrink: 0,
+            background: 'linear-gradient(135deg, rgba(99,102,241,.1), rgba(139,92,246,.12))',
+            borderRadius: 12, display: 'grid', placeItems: 'center',
+            color: 'var(--accent)',
+          }}
+        >
+          <GroupIcon style={{ fontSize: 22 }} />
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3 text-sm">
-        <div className="rounded-2xl bg-white/65 p-3">
-          <p className="m-0 text-xs font-bold uppercase tracking-[0.14em] text-sketch-slate">Members</p>
-          <p className="m-0 mt-1 text-xl font-black text-sketch-ink">{memberCnt}</p>
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginTop: 20 }}>
+        <div
+          style={{
+            background: 'rgba(241,245,249,0.80)',
+            borderRadius: 12, padding: '10px 14px',
+            border: '1px solid rgba(15,23,42,.05)',
+          }}
+        >
+          <p style={{ margin: 0, fontSize: '.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.12em', color: 'var(--muted)' }}>
+            Members
+          </p>
+          <p style={{ margin: '5px 0 0', fontWeight: 900, fontSize: '1.4rem', color: 'var(--ink)' }}>
+            {memberCnt}
+          </p>
         </div>
-        <div className="rounded-2xl bg-white/65 p-3">
-          <p className="m-0 text-xs font-bold uppercase tracking-[0.14em] text-sketch-slate">Last access</p>
-          <p className="m-0 mt-1 truncate text-sm font-black text-sketch-ink">{lastAccessedAt === null ? 'Not yet' : new Date(lastAccessedAt).toLocaleDateString()}</p>
+        <div
+          style={{
+            background: 'rgba(241,245,249,0.80)',
+            borderRadius: 12, padding: '10px 14px',
+            border: '1px solid rgba(15,23,42,.05)',
+          }}
+        >
+          <p style={{ margin: 0, fontSize: '.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '.12em', color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            <AccessTimeIcon style={{ fontSize: 12 }} /> Last access
+          </p>
+          <p style={{ margin: '5px 0 0', fontWeight: 700, fontSize: '.85rem', color: 'var(--ink)' }}>
+            {lastAccess}
+          </p>
         </div>
       </div>
 
-      <div className="mt-auto flex flex-wrap gap-2 pt-6">
-        <Button variant="contained" className="primary-btn" startIcon={<VisibilityIcon />} onClick={() => setOpenOpenBoardConfirmDialog(true)}>
-          Open
-        </Button>
+      {/* Actions */}
+      <div style={{ marginTop: 'auto', paddingTop: 20, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <button
+          className="btn btn-primary btn-sm"
+          onClick={() => setOpenOpenBoardConfirmDialog(true)}
+          style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+        >
+          <VisibilityIcon style={{ fontSize: 16 }} /> Open
+        </button>
+
         {canManage && (
-          <Button variant="outlined" className="secondary-btn" startIcon={<EditIcon />} onClick={() => setOpenEditDialog(true)}>
-            Edit
-          </Button>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => setOpenEditDialog(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <EditIcon style={{ fontSize: 16 }} /> Edit
+          </button>
         )}
+
         {canManage && (
-          <Button variant="outlined" color="error" sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 700 }} startIcon={<DeleteIcon />} onClick={() => setOpenDeleteConfirmDialog(true)}>
-            Delete
-          </Button>
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => setOpenDeleteConfirmDialog(true)}
+            style={{ display: 'flex', alignItems: 'center', gap: 6 }}
+          >
+            <DeleteIcon style={{ fontSize: 16 }} /> Delete
+          </button>
         )}
       </div>
 
       <EditBoardDialog open={openEditDialog} handleClose={() => setOpenEditDialog(false)} />
-      <ConfirmModal open={openDeleteConfirmDialog} title="Delete Confirmation" content="Are you sure you want to delete this board?" onConfirm={handleDeleteBoardConfirm} onClose={() => setOpenDeleteConfirmDialog(false)} />
-      <ConfirmModal open={openOpenBoardConfirmDialog} title="Open Board Confirmation" content="Are you sure you want to open this board?" onConfirm={handleOpenBoardConfirm} onClose={() => setOpenOpenBoardConfirmDialog(false)} />
+      <ConfirmModal
+        open={openDeleteConfirmDialog}
+        title="Delete Board"
+        content={`Are you sure you want to delete "${name}"? This cannot be undone.`}
+        onConfirm={handleDeleteBoardConfirm}
+        onClose={() => setOpenDeleteConfirmDialog(false)}
+      />
+      <ConfirmModal
+        open={openOpenBoardConfirmDialog}
+        title="Open Board"
+        content={`Open "${name}"? You'll join the live session.`}
+        onConfirm={handleOpenBoardConfirm}
+        onClose={() => setOpenOpenBoardConfirmDialog(false)}
+      />
     </motion.article>
   );
 };
